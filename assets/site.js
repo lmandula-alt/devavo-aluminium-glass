@@ -1,9 +1,35 @@
 (function(){
   var WHATSAPP = '27790340115';
   var EMAIL = 'luthando@devavo.co.za';
+  var PHONE = '079 034 0115';
 
   var year = document.getElementById('year');
   if (year) year.textContent = new Date().getFullYear();
+
+  // ---------- open / closed status (Mon-Fri 08:00-16:00, South African time) ----------
+  (function(){
+    var els = document.querySelectorAll('[data-open-status]');
+    if (!els.length) return;
+    var parts = {};
+    try {
+      new Intl.DateTimeFormat('en-GB', { timeZone: 'Africa/Johannesburg', weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false })
+        .formatToParts(new Date()).forEach(function(p){ parts[p.type] = p.value; });
+    } catch (e) { return; }
+    var mins = parseInt(parts.hour, 10) % 24 * 60 + parseInt(parts.minute, 10);
+    var weekend = parts.weekday === 'Sat' || parts.weekday === 'Sun';
+    var open = !weekend && mins >= 480 && mins < 960;
+    var label = open ? 'Open now' : weekend ? 'Weekend' : 'Closed now';
+    var detail = open ? 'call ' + PHONE : 'call or WhatsApp ' + PHONE;
+    Array.prototype.forEach.call(els, function(el){
+      el.classList.add(open ? 'is-open' : 'is-closed');
+      var span = el.querySelector('span');
+      span.textContent = label;
+      var more = document.createElement('span');
+      more.className = 'tb-long';
+      more.textContent = ' · ' + detail;
+      span.appendChild(more);
+    });
+  })();
 
   // ---------- mobile menu ----------
   var toggle = document.getElementById('menuToggle');

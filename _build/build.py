@@ -3,7 +3,7 @@
 Run from the repo root:  python _build/build.py          (final pages)
                          python _build/build.py --demo   (adds a "demo for review" banner)
 """
-import html, json, os, sys
+import hashlib, html, json, os, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEMO = "--demo" in sys.argv
@@ -12,7 +12,8 @@ PHONE, PHONE_INTL = "079 034 0115", "+27790340115"  # one number for calls, What
 WHATSAPP = "27790340115"
 EMAIL = "luthando@devavo.co.za"
 ADDRESS = ("5 Diesael Street, North End", "Gqeberha", "6001")
-HOURS = [("Mon – Fri", "08:00 – 17:00"), ("Saturday", "08:00 – 13:00")]
+HOURS = [("Mon – Fri", "08:00 – 16:00"), ("Weekends", "On WhatsApp")]
+# open_status in assets/site.js uses the same hours: Mon–Fri 08:00–16:00, South African time
 FACEBOOK = "https://www.facebook.com/share/16CC9W"
 WA_CATALOGUE = "https://wa.me/c/27790340115"
 AREAS = ["Gqeberha (Port Elizabeth)", "Kariega (Uitenhage)", "Despatch", "Jeffreys Bay", "Kouga",
@@ -193,6 +194,10 @@ def img(slug, alt=None, cls="", sizes="100vw", eager=False, attrs="", thumb=Fals
     return (f'<img src="{src}"{full} alt="{e(alt)}" width="{p["w"]}" height="{p["h"]}" '
             f'{load}{c} {attrs}>').replace(" >", ">")
 
+def asset_version(name):
+    """Short content hash so browsers fetch the new file whenever it changes."""
+    return hashlib.md5(open(os.path.join(ROOT, "assets", name), "rb").read()).hexdigest()[:8]
+
 def url(path):
     return (SITE_URL + "/" + path) if SITE_URL else path
 
@@ -211,7 +216,7 @@ def header(current):
               if DEMO else "")
     return f"""{banner}<a class="skip" href="#main">Skip to content</a>
 <div class="topbar"><div class="container">
-  <span class="tb-left">Gqeberha workshop · Est. 2010 · Aluminium, automation &amp; building</span>
+  <span class="tb-left"><span class="open-status" data-open-status><i></i><span>Call or WhatsApp {PHONE}</span></span></span>
   <span class="tb-right"><a href="{WA_CATALOGUE}" target="_blank" rel="noopener">View<span class="tb-long"> our</span> catalogue</a><a href="tel:{PHONE_INTL}"><span class="tb-long">Call / WhatsApp </span>{PHONE}</a></span>
 </div></div>
 <header class="site-nav">
@@ -233,7 +238,7 @@ def footer():
     <div><h4>Divisions</h4><ul>{divs}<li><a href="projects.html">Projects</a></li></ul></div>
     <div><h4>Contact</h4><ul><li><a href="tel:{PHONE_INTL}">{PHONE}</a></li><li><a href="{wa_link()}" target="_blank" rel="noopener">WhatsApp {PHONE}</a></li>
       <li><a href="mailto:{EMAIL}">{EMAIL}</a></li><li>{e(ADDRESS[0])}, {e(ADDRESS[1])}</li></ul></div>
-    <div><h4>Hours</h4><ul>{hours}<li><a href="{WA_CATALOGUE}" target="_blank" rel="noopener">WhatsApp catalogue</a></li>
+    <div><h4>Hours</h4><ul>{hours}<li>After hours: call or WhatsApp, we will get back to you</li><li><a href="{WA_CATALOGUE}" target="_blank" rel="noopener">WhatsApp catalogue</a></li>
       <li><a href="{FACEBOOK}" target="_blank" rel="noopener">Facebook</a></li></ul></div>
   </div>
   <div class="legal"><span>© <span id="year">2026</span> Devavo Trading Enterprise CC · Reg. 2010/087431/23</span><span>Gqeberha, Eastern Cape</span></div>
@@ -248,7 +253,7 @@ def footer():
   <img alt=""><p class="cap"></p>
   <button class="x" aria-label="Close">×</button><button class="prev" aria-label="Previous photo">‹</button><button class="next" aria-label="Next photo">›</button>
 </div>
-<script src="assets/site.js" defer></script>"""
+<script src="assets/site.js?v={asset_version('site.js')}" defer></script>"""
 
 def business_ld():
     return {
@@ -260,8 +265,7 @@ def business_ld():
                     "addressRegion": "Eastern Cape", "postalCode": ADDRESS[2], "addressCountry": "ZA"},
         "areaServed": "Eastern Cape, South Africa",
         "openingHoursSpecification": [
-            {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], "opens": "08:00", "closes": "17:00"},
-            {"@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "08:00", "closes": "13:00"}],
+            {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], "opens": "08:00", "closes": "16:00"}],
         "sameAs": [FACEBOOK, WA_CATALOGUE],
         "logo": url("images/logo/devavo-logo.png"), "image": url("images/logo/devavo-logo.png"),
         "hasOfferCatalog": {"@type": "OfferCatalog", "name": "Services", "itemListElement": [
@@ -291,7 +295,7 @@ def page(filename, title, meta, body, current, ld=None, og_img="ag-shopfront-san
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Arimo:wght@400;700&family=Tinos:wght@400;700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="assets/site.css?v={asset_version('site.css')}">
 {ld_html}
 </head>
 <body>
@@ -314,11 +318,11 @@ def quote_section(division=None, heading="Tell us what you need built"):
     <h2>{e(heading)}</h2>
     <p>Send a few details and photos of the job on WhatsApp, or fill in the form, and we will come back to you with a quote. Site visits are arranged by appointment.</p>
     <ul class="contact-list">
-      <li>{ICON["phone"]}<div><small>Call or WhatsApp</small><a href="tel:{PHONE_INTL}">{PHONE}</a></div></li>
+      <li>{ICON["phone"]}<div><small>Call or WhatsApp, any time</small><a href="tel:{PHONE_INTL}">{PHONE}</a><span class="after-hours">Outside trading hours? Still call or WhatsApp. If we can’t pick up, we’ll get back to you.</span></div></li>
       <li>{ICON["wa"]}<div><small>Catalogue</small><a href="{WA_CATALOGUE}" target="_blank" rel="noopener">Browse our products on WhatsApp</a></div></li>
       <li>{ICON["mail"]}<div><small>Email</small><a href="mailto:{EMAIL}">{EMAIL}</a></div></li>
       <li>{ICON["pin"]}<div><small>Workshop</small>{e(ADDRESS[0])}, {e(ADDRESS[1])}, {e(ADDRESS[2])}</div></li>
-      <li>{ICON["clock"]}<div><small>Hours</small>{hours}</div></li>
+      <li>{ICON["clock"]}<div><small>Trading hours</small>{hours}<span class="open-status on-dark" data-open-status><i></i><span></span></span></div></li>
     </ul>
   </div>
   <form class="quote" name="quote" method="POST" data-netlify="true" netlify-honeypot="bot-field">
