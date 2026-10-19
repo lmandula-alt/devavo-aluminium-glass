@@ -48,7 +48,7 @@ ul{ margin:0; padding:0; }
 .topbar a{ color:#fff; text-decoration:none; }
 .topbar .tb-right{ display:flex; gap:20px; }
 .topbar a{ white-space:nowrap; }
-@media (max-width:760px){ .topbar .tb-left, .topbar .tb-long{ display:none; } .topbar .container{ justify-content:center; } }
+@media (max-width:760px){ .topbar .tb-long{ display:none; } .topbar .container{ justify-content:space-between; } .open-status > span{ font-size:11px; } }
 
 header.site-nav{ position:sticky; top:0; z-index:50; background:color-mix(in srgb, var(--surface) 94%, transparent); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }
 .nav-row{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px var(--gutter); max-width:1320px; margin:0 auto; }
@@ -312,3 +312,11 @@ section.catalogue{ background:var(--bronze-tint); border-top:1px solid var(--lin
 .cat-copy h2{ font-size:clamp(26px,3.2vw,38px); }
 .cat-copy p{ color:var(--graphite); }
 .cat-actions{ display:flex; gap:12px; flex-wrap:wrap; }
+
+/* ---------- open / closed status ---------- */
+.open-status{ display:inline-flex; align-items:center; gap:7px; white-space:nowrap; }
+.open-status i{ width:8px; height:8px; border-radius:50%; background:#8a939b; flex:none; }
+.open-status.is-open i{ background:#2fd36b; box-shadow:0 0 0 3px rgba(47,211,107,.2); }
+.open-status.is-closed i{ background:var(--red-on-dark); }
+.contact-list .open-status{ display:flex; margin-top:6px; color:#fff; font-size:14px; }
+.after-hours{ display:block; color:#aeb5bb; font-size:13.5px; margin-top:4px; max-width:40ch; }
