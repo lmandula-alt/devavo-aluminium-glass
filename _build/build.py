@@ -212,12 +212,13 @@ def header(current):
     return f"""{banner}<a class="skip" href="#main">Skip to content</a>
 <div class="topbar"><div class="container">
   <span class="tb-left">Gqeberha workshop · Est. 2010 · Aluminium, automation &amp; building</span>
-  <span class="tb-right"><a href="{WA_CATALOGUE}" target="_blank" rel="noopener">View our catalogue</a><a href="tel:{PHONE_INTL}">Call / WhatsApp {PHONE}</a></span>
+  <span class="tb-right"><a href="{WA_CATALOGUE}" target="_blank" rel="noopener">View<span class="tb-long"> our</span> catalogue</a><a href="tel:{PHONE_INTL}"><span class="tb-long">Call / WhatsApp </span>{PHONE}</a></span>
 </div></div>
 <header class="site-nav">
   <div class="nav-row">
-    <a href="index.html" class="brand"><img src="images/devavo-aluminium-glass-logo.png" alt="" width="44" height="44">
-      <span><span class="name">DEVAVO</span><span class="sub">Aluminium · Automation · Construction</span></span></a>
+    <a href="index.html" class="brand" aria-label="Devavo home">
+      <span class="wordmark" aria-hidden="true"><img src="images/logo/devavo-logo-160.png" alt="" width="160" height="103"><span class="name">EVAVO</span></span>
+      <span class="sub">Aluminium · Automation · Construction</span></a>
     <nav class="primary" id="primaryNav" aria-label="Main">{links}<a href="contact.html" class="nav-cta"{" aria-current=\"page\"" if current == "contact.html" else ""}>Get a quote</a></nav>
     <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="primaryNav">{ICON["menu"]}</button>
   </div>
@@ -228,7 +229,7 @@ def footer():
     hours = "".join(f"<li>{e(a)}: {e(b)}</li>" for a, b in HOURS)
     return f"""<footer class="site"><div class="container">
   <div class="cols">
-    <div><h4>Devavo</h4><p>Devavo Trading Enterprise CC. Aluminium and glass, automation, construction and balustrades, from our workshop in North End, Gqeberha. Established 2010.</p></div>
+    <div><img class="footer-logo" src="images/logo/devavo-logo-160.png" alt="Devavo" width="160" height="103" loading="lazy"><p>Devavo Trading Enterprise CC. Aluminium and glass, automation, construction and balustrades, from our workshop in North End, Gqeberha. Established 2010.</p></div>
     <div><h4>Divisions</h4><ul>{divs}<li><a href="projects.html">Projects</a></li></ul></div>
     <div><h4>Contact</h4><ul><li><a href="tel:{PHONE_INTL}">{PHONE}</a></li><li><a href="{wa_link()}" target="_blank" rel="noopener">WhatsApp {PHONE}</a></li>
       <li><a href="mailto:{EMAIL}">{EMAIL}</a></li><li>{e(ADDRESS[0])}, {e(ADDRESS[1])}</li></ul></div>
@@ -262,6 +263,7 @@ def business_ld():
             {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], "opens": "08:00", "closes": "17:00"},
             {"@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "08:00", "closes": "13:00"}],
         "sameAs": [FACEBOOK, WA_CATALOGUE],
+        "logo": url("images/logo/devavo-logo.png"), "image": url("images/logo/devavo-logo.png"),
         "hasOfferCatalog": {"@type": "OfferCatalog", "name": "Services", "itemListElement": [
             {"@type": "OfferCatalog", "name": d["name"], "itemListElement": [
                 {"@type": "Offer", "itemOffered": {"@type": "Service", "name": s[0]}} for s in d["services"]]}
@@ -283,7 +285,9 @@ def page(filename, title, meta, body, current, ld=None, og_img="ag-shopfront-san
 <meta property="og:description" content="{e(meta)}">
 <meta property="og:image" content="{url('images/work/' + og_img + '.webp')}">
 <meta name="theme-color" content="#14181d">
-<link rel="icon" href="images/devavo-aluminium-glass-logo.png">
+<link rel="icon" type="image/png" sizes="32x32" href="images/logo/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="images/logo/icon-192.png">
+<link rel="apple-touch-icon" href="images/logo/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
