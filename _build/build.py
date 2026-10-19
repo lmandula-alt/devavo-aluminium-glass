@@ -217,8 +217,8 @@ def header(current):
 <header class="site-nav">
   <div class="nav-row">
     <a href="index.html" class="brand" aria-label="Devavo home">
-      <span class="wordmark" aria-hidden="true"><img src="images/logo/devavo-logo-160.png" alt="" width="160" height="103"><span class="name">EVAVO</span></span>
-      <span class="sub">Aluminium · Automation · Construction</span></a>
+      <span class="wordmark" aria-hidden="true"><img src="images/logo/devavo-logo-160.png" alt="" width="160" height="103"><span class="name">evavo</span></span>
+      <span class="sub">Own your reality</span></a>
     <nav class="primary" id="primaryNav" aria-label="Main">{links}<a href="contact.html" class="nav-cta"{" aria-current=\"page\"" if current == "contact.html" else ""}>Get a quote</a></nav>
     <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="primaryNav">{ICON["menu"]}</button>
   </div>
@@ -229,7 +229,7 @@ def footer():
     hours = "".join(f"<li>{e(a)}: {e(b)}</li>" for a, b in HOURS)
     return f"""<footer class="site"><div class="container">
   <div class="cols">
-    <div><img class="footer-logo" src="images/logo/devavo-logo-160.png" alt="Devavo" width="160" height="103" loading="lazy"><p>Devavo Trading Enterprise CC. Aluminium and glass, automation, construction and balustrades, from our workshop in North End, Gqeberha. Established 2010.</p></div>
+    <div><img class="footer-logo" src="images/logo/devavo-logo-160.png" alt="Devavo" width="160" height="103" loading="lazy"><p class="footer-tag">Own your reality</p><p>Devavo Trading Enterprise CC. Aluminium and glass, automation, construction and balustrades, from our workshop in North End, Gqeberha. Established 2010.</p></div>
     <div><h4>Divisions</h4><ul>{divs}<li><a href="projects.html">Projects</a></li></ul></div>
     <div><h4>Contact</h4><ul><li><a href="tel:{PHONE_INTL}">{PHONE}</a></li><li><a href="{wa_link()}" target="_blank" rel="noopener">WhatsApp {PHONE}</a></li>
       <li><a href="mailto:{EMAIL}">{EMAIL}</a></li><li>{e(ADDRESS[0])}, {e(ADDRESS[1])}</li></ul></div>
@@ -284,13 +284,13 @@ def page(filename, title, meta, body, current, ld=None, og_img="ag-shopfront-san
 <meta property="og:title" content="{e(title)}">
 <meta property="og:description" content="{e(meta)}">
 <meta property="og:image" content="{url('images/work/' + og_img + '.webp')}">
-<meta name="theme-color" content="#14181d">
+<meta name="theme-color" content="#ec1a23">
 <link rel="icon" type="image/png" sizes="32x32" href="images/logo/favicon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="images/logo/icon-192.png">
 <link rel="apple-touch-icon" href="images/logo/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Arimo:wght@400;700&family=Tinos:wght@400;700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/site.css">
 {ld_html}
 </head>
