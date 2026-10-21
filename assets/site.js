@@ -31,6 +31,68 @@
     });
   })();
 
+  // ---------- photo & video protection: no right-click save, drag-out or long-press save ----------
+  var PROTECTED = 'img, video, .gallery figure, .mosaic a, .page-hero, .lightbox';
+  document.addEventListener('contextmenu', function(e){
+    if (e.target.closest && e.target.closest(PROTECTED)) e.preventDefault();
+  });
+  document.addEventListener('dragstart', function(e){
+    if (e.target.tagName === 'IMG' || e.target.tagName === 'VIDEO') e.preventDefault();
+  });
+
+  // ---------- cookie consent, then Google Analytics / Meta Pixel ----------
+  (function(){
+    var cfg = window.DEVAVO_TRACKING;
+    var KEY = 'devavo-consent';
+    function get(){ try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+    function set(v){ try { localStorage.setItem(KEY, v); } catch (e) {} }
+    function load(){
+      if (cfg.ga4) {
+        var s = document.createElement('script');
+        s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + cfg.ga4;
+        document.head.appendChild(s);
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function(){ dataLayer.push(arguments); };
+        gtag('js', new Date()); gtag('config', cfg.ga4);
+      }
+      if (cfg.pixel) {
+        !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;
+        s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', cfg.pixel); fbq('track', 'PageView');
+      }
+    }
+    // record enquiries as conversions (quote form, WhatsApp, calls)
+    window.devavoTrack = function(name){
+      if (get() !== 'yes' || !cfg) return;
+      if (window.gtag) gtag('event', name === 'Lead' ? 'generate_lead' : 'contact', { method: name });
+      if (window.fbq) fbq('track', name === 'Lead' ? 'Lead' : 'Contact');
+    };
+    document.addEventListener('click', function(e){
+      var a = e.target.closest && e.target.closest('a[href]');
+      if (!a) return;
+      var h = a.getAttribute('href');
+      if (h.indexOf('tel:') === 0) devavoTrack('Call');
+      else if (h.indexOf('wa.me/') > -1) devavoTrack('WhatsApp');
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-consent-reset]'), function(b){
+      b.addEventListener('click', function(){ try { localStorage.removeItem(KEY); } catch (e) {} location.reload(); });
+    });
+    if (!cfg) return;
+    var banner = document.getElementById('consent');
+    var choice = get();
+    if (choice === 'yes') load();
+    else if (choice !== 'no' && banner) {
+      banner.hidden = false;
+      banner.addEventListener('click', function(e){
+        var v = e.target.getAttribute && e.target.getAttribute('data-consent');
+        if (!v) return;
+        set(v); banner.hidden = true;
+        if (v === 'yes') load();
+      });
+    }
+  })();
+
   // ---------- mobile menu ----------
   var toggle = document.getElementById('menuToggle');
   var nav = document.getElementById('primaryNav');
@@ -127,7 +189,7 @@
           success.appendChild(em);
         }
         success.classList.add('show');
-        if (sent) form.reset();
+        if (sent) { form.reset(); if (window.devavoTrack) devavoTrack('Lead'); }
         button.disabled = false;
         button.innerHTML = label;
       });

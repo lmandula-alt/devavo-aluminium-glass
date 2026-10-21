@@ -320,3 +320,16 @@ section.catalogue{ background:var(--bronze-tint); border-top:1px solid var(--lin
 .open-status.is-closed i{ background:var(--red-on-dark); }
 .contact-list .open-status{ display:flex; margin-top:6px; color:#fff; font-size:14px; }
 .after-hours{ display:block; color:#aeb5bb; font-size:13.5px; margin-top:4px; max-width:40ch; }
+
+/* ---------- image & video protection ---------- */
+img, video{ -webkit-user-drag:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+
+/* ---------- cookie consent ---------- */
+.consent{ position:fixed; left:16px; right:16px; bottom:16px; z-index:120; max-width:560px; margin:0 auto; background:var(--charcoal); color:#e6e8ea; padding:16px 18px; border-radius:var(--radius); box-shadow:var(--shadow-2); display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+.consent[hidden]{ display:none; }
+.consent p{ flex:1 1 260px; font-size:14px; }
+.consent a{ color:#fff; }
+.consent div{ display:flex; gap:8px; }
+.consent .btn{ padding:10px 16px; }
+.consent .btn-outline{ color:#fff; border-color:#4b5560; }
+@media (max-width:860px){ .consent{ bottom:70px; } }

@@ -16,6 +16,9 @@ HOURS = [("Mon – Fri", "08:00 – 16:00"), ("Weekends", "On WhatsApp")]
 # open_status in assets/site.js uses the same hours: Mon–Fri 08:00–16:00, South African time
 FACEBOOK = "https://www.facebook.com/share/16CC9W"
 WA_CATALOGUE = "https://wa.me/c/27790340115"
+# Visitor tracking. Paste the IDs in and rebuild; nothing loads until a visitor accepts cookies.
+GA4_ID = ""          # Google Analytics 4 Measurement ID, e.g. "G-XXXXXXXXXX"
+META_PIXEL_ID = ""   # Meta (Facebook) Pixel ID, e.g. "123456789012345"
 AREAS = ["Gqeberha (Port Elizabeth)", "Kariega (Uitenhage)", "Despatch", "Jeffreys Bay", "Kouga",
          "Makhanda", "Graaff-Reinet", "Sundays River Valley", "Eastern Cape-wide for commercial work"]
 
@@ -194,6 +197,19 @@ def img(slug, alt=None, cls="", sizes="100vw", eager=False, attrs="", thumb=Fals
     return (f'<img src="{src}"{full} alt="{e(alt)}" width="{p["w"]}" height="{p["h"]}" '
             f'{load}{c} {attrs}>').replace(" >", ">")
 
+def tracking_config():
+    if not (GA4_ID or META_PIXEL_ID):
+        return ""
+    return f'<script>window.DEVAVO_TRACKING={json.dumps({"ga4": GA4_ID, "pixel": META_PIXEL_ID})};</script>'
+
+def consent_banner():
+    if not (GA4_ID or META_PIXEL_ID):
+        return ""
+    return """<div class="consent" id="consent" role="dialog" aria-live="polite" aria-label="Cookie choice" hidden>
+  <p>We use cookies to count visitors and to show our adverts on Facebook and Instagram. <a href="privacy.html">Read more</a></p>
+  <div><button type="button" class="btn btn-outline" data-consent="no">Decline</button><button type="button" class="btn btn-primary" data-consent="yes">Accept</button></div>
+</div>"""
+
 def asset_version(name):
     """Short content hash so browsers fetch the new file whenever it changes."""
     return hashlib.md5(open(os.path.join(ROOT, "assets", name), "rb").read()).hexdigest()[:8]
@@ -241,7 +257,7 @@ def footer():
     <div><h4>Hours</h4><ul>{hours}<li>After hours: call or WhatsApp, we will get back to you</li><li><a href="{WA_CATALOGUE}" target="_blank" rel="noopener">WhatsApp catalogue</a></li>
       <li><a href="{FACEBOOK}" target="_blank" rel="noopener">Facebook</a></li></ul></div>
   </div>
-  <div class="legal"><span>© <span id="year">2026</span> Devavo Trading Enterprise CC · Reg. 2010/087431/23</span><span>Gqeberha, Eastern Cape</span></div>
+  <div class="legal"><span>© <span id="year">2026</span> Devavo Trading Enterprise CC · Reg. 2010/087431/23</span><span><a href="privacy.html">Privacy &amp; cookies</a> · Gqeberha, Eastern Cape</span></div>
 </div></footer>
 <nav class="action-bar" aria-label="Quick contact">
   <a href="tel:{PHONE_INTL}">{ICON["phone"]}Call</a>
@@ -249,6 +265,7 @@ def footer():
   <a class="q" href="contact.html">{ICON["quote"]}Free quote</a>
 </nav>
 <a class="wa-float" href="{wa_link()}" target="_blank" rel="noopener" aria-label="Get a quote on WhatsApp">{ICON["wa"]}<span>Quote on WhatsApp</span></a>
+{consent_banner()}
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
   <img alt=""><p class="cap"></p>
   <button class="x" aria-label="Close">×</button><button class="prev" aria-label="Previous photo">‹</button><button class="next" aria-label="Next photo">›</button>
@@ -296,6 +313,7 @@ def page(filename, title, meta, body, current, ld=None, og_img="ag-shopfront-san
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Arimo:wght@400;700&family=Tinos:wght@400;700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/site.css?v={asset_version('site.css')}">
+{tracking_config()}
 {ld_html}
 </head>
 <body>
@@ -475,7 +493,7 @@ def build_division(d):
                    for i, (t, x) in enumerate(d["services"]))
     vids = ""
     if d["videos"]:
-        cards = "".join(f"""<div class="video-card"><video src="images/video/{v}.mp4" poster="images/video/{v}.jpg" controls muted playsinline preload="none"></video><p>{e(c)}</p></div>"""
+        cards = "".join(f"""<div class="video-card"><video src="images/video/{v}.mp4" poster="images/video/{v}.jpg" controls controlslist="nodownload noplaybackrate" disablepictureinpicture muted playsinline preload="none"></video><p>{e(c)}</p></div>"""
                         for v, c in d["videos"])
         vids = f"""<section class="alt"><div class="container">
   <div class="section-head"><span class="eyebrow">On video</span><h2>See it working</h2></div>
@@ -580,9 +598,36 @@ def build_contact():
          f"Get a free quote from Devavo for aluminium and glass, garage doors and gates, construction and renovations, or balustrades. Call {PHONE} or WhatsApp {PHONE}.",
          body, "contact.html", og_img="tm-team-on-site")
 
+def build_privacy():
+    tools = []
+    if GA4_ID:
+        tools.append("<li><b>Google Analytics</b> counts visits and shows which pages are viewed, so we know what is useful.</li>")
+    if META_PIXEL_ID:
+        tools.append("<li><b>Meta Pixel</b> (Facebook and Instagram) lets us show our adverts to people who have visited this site and measure whether those adverts work.</li>")
+    tool_list = "<ul class=\"ticks\">" + "".join(tools) + "</ul>" if tools else "<p>We do not currently use any analytics or advertising cookies.</p>"
+    body = f"""<section class="page-hero">{img('ag-shopfront-sanparks', '', eager=True)}<div class="container">
+  <p class="crumbs"><a href="index.html">Home</a> / Privacy</p>
+  <span class="eyebrow">Privacy &amp; cookies</span><h1>How we handle your information</h1>
+</div></section>
+<section><div class="container"><div class="faq" style="display:grid;gap:22px">
+  <p>Devavo Trading Enterprise CC respects your privacy and processes personal information in line with the Protection of Personal Information Act (POPIA).</p>
+  <h2 style="font-size:24px">Quote requests</h2>
+  <p>When you send a quote request, we receive your name, phone number, email address, area and project details. We use these only to reply to you, quote and do the work. We do not sell or share them with anyone else. Form messages are delivered through our website host, Netlify.</p>
+  <h2 style="font-size:24px">Cookies and visitor statistics</h2>
+  <p>With your permission, this site uses the following. They only load if you choose <b>Accept</b> on the cookie notice:</p>
+  {tool_list}
+  <p>If you choose <b>Decline</b>, none of them load. You can change your choice at any time: <button type="button" class="btn btn-outline" data-consent-reset>Change cookie choice</button></p>
+  <h2 style="font-size:24px">Photos and videos</h2>
+  <p>All photos and videos on this site show Devavo's own work and are the property of Devavo Trading Enterprise CC. Please do not copy or reuse them without our written permission.</p>
+  <h2 style="font-size:24px">Contact</h2>
+  <p>To ask what information we hold about you, or to have it corrected or deleted, email <a href="mailto:{EMAIL}">{EMAIL}</a> or call {PHONE}.</p>
+</div></div></section>"""
+    page("privacy.html", "Privacy & Cookies | Devavo", "How Devavo handles personal information, cookies and visitor statistics.",
+         body, "privacy.html")
+
 def build_extras():
     pages = ["index.html", "aluminium-glass.html", "automation.html", "construction.html",
-             "balustrades-security.html", "projects.html", "contact.html"]
+             "balustrades-security.html", "projects.html", "contact.html", "privacy.html"]
     if SITE_URL:
         urls = "".join(f"<url><loc>{SITE_URL}/{'' if p == 'index.html' else p}</loc></url>" for p in pages)
         open(os.path.join(ROOT, "sitemap.xml"), "w", encoding="utf-8").write(
@@ -595,5 +640,6 @@ for d in DIVISIONS:
     build_division(d)
 build_projects()
 build_contact()
+build_privacy()
 build_extras()
 print("built", "(demo)" if DEMO else "")
