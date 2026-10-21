@@ -17,7 +17,7 @@ HOURS = [("Mon – Fri", "08:00 – 16:00"), ("Weekends", "On WhatsApp")]
 FACEBOOK = "https://www.facebook.com/share/16CC9W"
 WA_CATALOGUE = "https://wa.me/c/27790340115"
 # Visitor tracking. Paste the IDs in and rebuild; nothing loads until a visitor accepts cookies.
-GA4_ID = ""          # Google Analytics 4 Measurement ID, e.g. "G-XXXXXXXXXX"
+GA4_ID = "G-V5W44GBSJN"  # Google Analytics 4 Measurement ID
 META_PIXEL_ID = ""   # Meta (Facebook) Pixel ID, e.g. "123456789012345"
 AREAS = ["Gqeberha (Port Elizabeth)", "Kariega (Uitenhage)", "Despatch", "Jeffreys Bay", "Kouga",
          "Makhanda", "Graaff-Reinet", "Sundays River Valley", "Eastern Cape-wide for commercial work"]
@@ -205,8 +205,10 @@ def tracking_config():
 def consent_banner():
     if not (GA4_ID or META_PIXEL_ID):
         return ""
-    return """<div class="consent" id="consent" role="dialog" aria-live="polite" aria-label="Cookie choice" hidden>
-  <p>We use cookies to count visitors and to show our adverts on Facebook and Instagram. <a href="privacy.html">Read more</a></p>
+    uses = " and ".join(x for x in ("count visitors" if GA4_ID else "",
+                                     "show our adverts on Facebook and Instagram" if META_PIXEL_ID else "") if x)
+    return f"""<div class="consent" id="consent" role="dialog" aria-live="polite" aria-label="Cookie choice" hidden>
+  <p>We use cookies to {uses}. <a href="privacy.html">Read more</a></p>
   <div><button type="button" class="btn btn-outline" data-consent="no">Decline</button><button type="button" class="btn btn-primary" data-consent="yes">Accept</button></div>
 </div>"""
 
