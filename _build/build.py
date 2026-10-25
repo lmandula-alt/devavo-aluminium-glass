@@ -11,7 +11,7 @@ SITE_URL = "https://devavo.co.za"
 PHONE, PHONE_INTL = "079 034 0115", "+27790340115"  # one number for calls, WhatsApp and the catalogue
 WHATSAPP = "27790340115"
 EMAIL = "luthando@devavo.co.za"
-ADDRESS = ("5 Diesael Street, North End", "Gqeberha", "6001")
+ADDRESS = ("5 Diesel Street, North End", "Gqeberha", "6001")
 HOURS = [("Mon – Fri", "08:00 – 16:00"), ("Weekends", "On WhatsApp")]
 # open_status in assets/site.js uses the same hours: Mon–Fri 08:00–16:00, South African time
 FACEBOOK = "https://www.facebook.com/share/16CC9W"
