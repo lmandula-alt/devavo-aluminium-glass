@@ -696,7 +696,7 @@ def build_sa2ta():
     others = "".join(f'<a href="/{folder}/">{e(t.split(" | ")[0])}</a>' for _, folder, t, _ in SA2TA_PAGES)
     for src, folder, title, meta in SA2TA_PAGES:
         h1, content = md_to_html(open(os.path.join(ROOT, "_build", "sa2ta", src), encoding="utf-8").read())
-        body = f"""<section class="page-hero">{img('ag-shopfront-sanparks', '', eager=True)}<div class="container">
+        body = f"""<section class="page-hero"><img src="images/sa2ta/tow-truck.webp" alt="" width="1195" height="812" fetchpriority="high"><div class="container">
   <p class="crumbs"><a href="index.html">Home</a> / Sa2ta</p>
   <span class="eyebrow">Sa2ta app</span><h1>{e(h1)}</h1>
 </div></section>
