@@ -3,7 +3,7 @@
 Run from the repo root:  python _build/build.py          (final pages)
                          python _build/build.py --demo   (adds a "demo for review" banner)
 """
-import hashlib, html, json, os, sys
+import hashlib, html, json, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEMO = "--demo" in sys.argv
@@ -293,7 +293,7 @@ def business_ld():
             for d in DIVISIONS]},
     }
 
-def page(filename, title, meta, body, current, ld=None, og_img="ag-shopfront-sanparks"):
+def page(filename, title, meta, body, current, ld=None, og_img="ag-shopfront-sanparks", root_links=False):
     lds = [business_ld()] + ([ld] if ld else [])
     ld_html = "".join(f'<script type="application/ld+json">{json.dumps(x, ensure_ascii=False)}</script>' for x in lds)
     doc = f"""<!DOCTYPE html>
@@ -327,7 +327,11 @@ def page(filename, title, meta, body, current, ld=None, og_img="ag-shopfront-san
 </body>
 </html>
 """
-    open(os.path.join(ROOT, filename), "w", encoding="utf-8", newline="\n").write(doc)
+    if root_links:   # a page in a sub-folder (e.g. sa2ta/privacy/): make the site's own links start at the root
+        doc = re.sub(r'((?:href|src|data-full)=")(?![a-z][a-z0-9+.-]*:|#|/)', r"\1/", doc)
+    path = os.path.join(ROOT, filename)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    open(path, "w", encoding="utf-8", newline="\n").write(doc)
 
 def quote_section(division=None, heading="Tell us what you need built"):
     opts = "".join(f'<option{" selected" if division == d["name"] else ""}>{e(d["name"])}</option>' for d in DIVISIONS)
@@ -627,9 +631,85 @@ def build_privacy():
     page("privacy.html", "Privacy & Cookies | Devavo", "How Devavo handles personal information, cookies and visitor statistics.",
          body, "privacy.html")
 
+# ----------------------------------------------------------------- Sa2ta app pages
+# The Sa2ta app's privacy policy, terms and account-deletion page (Google Play links to them).
+# Source: _build/sa2ta/*.md, copied from the app's repository (pull-me-towing, docs/legal/).
+SA2TA_PAGES = [  # (source, folder, title, description)
+    ("privacy.md", "sa2ta/privacy", "Sa2ta Privacy Policy | Devavo",
+     "How the Sa2ta towing and goods-moving app handles personal information, under POPIA."),
+    ("terms.md", "sa2ta/terms", "Sa2ta Terms of Use | Devavo",
+     "The terms for using the Sa2ta towing and goods-moving app, run by Devavo Trading Enterprise CC."),
+    ("delete-account.md", "sa2ta/delete-account", "Delete your Sa2ta account | Devavo",
+     "How to delete your Sa2ta account and what is deleted."),
+]
+
+def md_inline(t):
+    t = e(t, quote=False)
+    t = re.sub(r"`([^`]+)`", r"<code>\1</code>", t)
+    t = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", t)
+    t = re.sub(r"(?<![*\w])\*(?!\s)(.+?)\*(?!\w)", r"<i>\1</i>", t)
+    t = re.sub(r"(https?://[^\s<]+?)([.,;)]*)(?=\s|$|<)", r'<a href="\1" rel="noopener">\1</a>\2', t)
+    t = re.sub(r"(?<![\w/.@])([\w.+-]+@[\w-]+(?:\.[\w-]+)+)", r'<a href="mailto:\1">\1</a>', t)
+    return t
+
+def md_to_html(src):
+    """Just enough Markdown for the legal pages: headings, paragraphs, lists, tables, bold, links.
+    Drops the notes to the owner (lines starting with '>') and '[…]' reminders in headings."""
+    lines = [l.rstrip() for l in src.splitlines() if not l.startswith(">")]
+    out, title, i = [], "", 0
+    while i < len(lines):
+        l = lines[i]
+        if not l.strip():
+            i += 1; continue
+        if l.startswith("# "):
+            title = l[2:].strip(); i += 1; continue
+        if l.startswith("## "):
+            out.append(f"<h2>{md_inline(re.sub(r'\s*\[[^]]*\]', '', l[3:]).strip())}</h2>"); i += 1; continue
+        if l.startswith("|"):
+            rows = []
+            while i < len(lines) and lines[i].startswith("|"):
+                cells = [c.strip() for c in lines[i].strip("|").split("|")]
+                if not all(set(c) <= set("-: ") for c in cells):
+                    rows.append(cells)
+                i += 1
+            head = "".join(f"<th>{md_inline(c)}</th>" for c in rows[0])
+            body = "".join("<tr>" + "".join(f"<td>{md_inline(c)}</td>" for c in r) + "</tr>" for r in rows[1:])
+            out.append(f'<div class="table-wrap"><table><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>'); continue
+        m = re.match(r"(- |\d+\. )", l)
+        if m:
+            tag = "ol" if m.group(1)[0].isdigit() else "ul"
+            items = []
+            while i < len(lines) and (re.match(r"(- |\d+\. )", lines[i]) or (lines[i].startswith("  ") and items)):
+                if lines[i].startswith("  "):
+                    items[-1] += " " + lines[i].strip()
+                else:
+                    items.append(re.sub(r"^(- |\d+\. )", "", lines[i]))
+                i += 1
+            out.append(f"<{tag}>" + "".join(f"<li>{md_inline(x)}</li>" for x in items) + f"</{tag}>"); continue
+        para = []
+        while i < len(lines) and lines[i].strip() and not re.match(r"(#|\||- |\d+\. )", lines[i]):
+            para.append(lines[i].strip()); i += 1
+        out.append(f"<p>{md_inline(' '.join(para))}</p>")
+    return title, "\n  ".join(out)
+
+def build_sa2ta():
+    others = "".join(f'<a href="/{folder}/">{e(t.split(" | ")[0])}</a>' for _, folder, t, _ in SA2TA_PAGES)
+    for src, folder, title, meta in SA2TA_PAGES:
+        h1, content = md_to_html(open(os.path.join(ROOT, "_build", "sa2ta", src), encoding="utf-8").read())
+        body = f"""<section class="page-hero">{img('ag-shopfront-sanparks', '', eager=True)}<div class="container">
+  <p class="crumbs"><a href="index.html">Home</a> / Sa2ta</p>
+  <span class="eyebrow">Sa2ta app</span><h1>{e(h1)}</h1>
+</div></section>
+<section><div class="container"><div class="legal-doc">
+  {content}
+  <p class="legal-links">{others}</p>
+</div></div></section>"""
+        page(folder + "/index.html", title, meta, body, "", root_links=True)
+
 def build_extras():
     pages = ["index.html", "aluminium-glass.html", "automation.html", "construction.html",
-             "balustrades-security.html", "projects.html", "contact.html", "privacy.html"]
+             "balustrades-security.html", "projects.html", "contact.html", "privacy.html"] + \
+            [folder + "/" for _, folder, _, _ in SA2TA_PAGES]
     if SITE_URL:
         urls = "".join(f"<url><loc>{SITE_URL}/{'' if p == 'index.html' else p}</loc></url>" for p in pages)
         open(os.path.join(ROOT, "sitemap.xml"), "w", encoding="utf-8").write(
@@ -643,5 +723,6 @@ for d in DIVISIONS:
 build_projects()
 build_contact()
 build_privacy()
+build_sa2ta()
 build_extras()
 print("built", "(demo)" if DEMO else "")
